@@ -13,5 +13,12 @@ export default route(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE)
   })
 
+  Router.beforeEach((to) => {
+    const isAuthenticated = useSessionStore().isLoggedIn
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+    if (requiresAuth && !isAuthenticated) return { name: 'login', query: { next: to.fullPath } }
+    else if (!requiresAuth && isAuthenticated) return { name: 'home' }
+  })
+
   return Router
 })
