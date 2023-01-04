@@ -101,6 +101,16 @@ export default defineComponent({
         title: 'Home',
         icon: 'home',
         to: '/home'
+      },
+      {
+        title: 'Listas',
+        icon: 'list',
+        to: '/shopping-lists'
+      },
+      {
+        title: 'Carrinhos',
+        icon: 'shopping_cart',
+        to: '/shopping-carts'
       }
     ]
 

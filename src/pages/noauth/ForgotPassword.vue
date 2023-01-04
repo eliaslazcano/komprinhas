@@ -13,7 +13,7 @@
             autocomplete="username"
             v-model="email"
             :disable="processing"
-            :rules="[v => !!v && !!v.trim() || 'Insira seu e-mail']"
+            :rules="[v => !!v && !!v.trim() || 'Insira seu e-mail', v => !v || /.+@.+\..+/.test(v) || 'Insira um e-mail válido']"
             lazy-rules
           />
           <div class="text-center">

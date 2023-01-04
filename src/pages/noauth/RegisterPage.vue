@@ -21,7 +21,7 @@
             autocomplete="username"
             v-model="form.email"
             :disable="processing"
-            :rules="[v => !!v && !!v.trim() || 'Insira seu email']"
+            :rules="[v => !!v && !!v.trim() || 'Insira seu e-mail', v => !v || /.+@.+\..+/.test(v) || 'Insira um e-mail válido']"
             lazy-rules
           />
           <q-input

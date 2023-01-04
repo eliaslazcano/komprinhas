@@ -8,6 +8,8 @@ const routes = [
       { path: '', name: 'home', alias: '/home', component: () => import('pages/HomePage.vue') },
       { path: 'change-password', name: 'change-password', component: () => import('pages/ChangePassword.vue') },
       { path: 'profile', name: 'profile', component: () => import('pages/ProfilePage.vue') },
+      { path: 'shopping-lists', name: 'shopping-lists', component: () => import('pages/ShoppingLists.vue') },
+      { path: 'shopping-carts', name: 'shopping-carts', component: () => import('pages/ShoppingCarts.vue') },
     ]
   },
 
