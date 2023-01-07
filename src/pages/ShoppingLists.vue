@@ -5,9 +5,17 @@
       :loading="loading"
       :columns="columns"
       :rows="rows"
-      :pagination="{sortBy: 'id', descending: true}"
+      :pagination="{sortBy: 'id', descending: true, rowsPerPage: 7}"
       row-key="id"
-    ></q-table>
+      dense
+    >
+      <template v-slot:body-cell-actions="{row}">
+        <q-td class="text-right">
+          <q-btn icon="edit" color="primary" flat round dense :to="'shopping-list/' + row.id" />
+          <q-btn icon="delete" color="negative" flat round dense @click="deleteList(row.id)" />
+        </q-td>
+      </template>
+    </q-table>
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
       <q-btn fab icon="add" color="positive" @click="createList" />
     </q-page-sticky>
@@ -26,6 +34,7 @@ export default defineComponent({
       { name: 'id', label: 'Cod.', field: 'id', sortable: true, align: 'left' },
       { name: 'name', label: 'Nome', field: 'name', sortable: true },
       { name: 'date', label: 'Criada em', field: 'created_at', sortable: true, format: val => useMoment(val).format('DD/MM/YYYY') },
+      { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'right' }
     ],
     rows: [],
   }),
@@ -49,15 +58,27 @@ export default defineComponent({
         ok: 'Confirmar',
       })
         .onOk(async data => {
-          const {error} = await useApi().post('shopping_lists', {name: data.trim()})
+          const {error, data: rows} = await useApi().post('shopping_lists', {name: data.trim()}).select()
           if (error) this.$q.notify({type: 'negative', message: error.message})
-          //TODO - Abrir a lista
+          this.$router.push('shopping-list/' + rows[0].id)
         })
         .onCancel(async () => {
-          const {error} = await useApi().post('shopping_lists', {})
+          const {error, data: rows} = await useApi().post('shopping_lists', {}).select()
           if (error) this.$q.notify({type: 'negative', message: error.message})
-          //TODO - Abrir a lista
+          this.$router.push('shopping-list/' + rows[0].id)
         })
+    },
+    deleteList(id) {
+      this.$q.dialog({
+        title: 'Confirme',
+        message: 'Você quer mesmo apagar a lista?',
+        cancel: true,
+        persistent: true
+      }).onOk(async () => {
+        const { error } = await useApi().remove('shopping_lists', id)
+        if (error) this.$q.notify({ type: 'negative', message: error.message })
+        else await this.loadData()
+      })
     },
   },
   created() {

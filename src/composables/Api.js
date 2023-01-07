@@ -8,9 +8,10 @@ export const useApi = () => {
   /**
    * Return all data/rows from table
    * @param {string} table
+   * @param {?string} columns
    */
-  const list = async (table) => {
-    return await supabase.from(table).select();
+  const list = (table, columns = null) => {
+    return supabase.from(table).select(columns)
   }
 
   /**
@@ -18,8 +19,10 @@ export const useApi = () => {
    * @param {string} table
    * @param {number} id
    */
-  const getById = (table, id) => {
-    return supabase.from(table).select('*').eq('id', id);
+  const getById = async (table, id) => {
+    const { error, data } = await supabase.from(table).select('*').eq('id', id)
+    if (error) return { error, data: null }
+    return { error: null, data: data[0] }
   }
 
   /**
