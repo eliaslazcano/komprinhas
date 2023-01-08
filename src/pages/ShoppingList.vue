@@ -4,6 +4,8 @@
       :loading="loading"
       :columns="tableColumns"
       :rows="tableRows"
+      :dense="$q.screen.lt.sm"
+      :pagination="{sortBy: 'name', rowsPerPage: 10}"
     >
       <template v-slot:top>
         <q-input
@@ -17,8 +19,13 @@
           dense
         />
       </template>
+      <template v-slot:body-cell-actions="{row}">
+        <q-td class="text-right">
+          <q-btn icon="delete" color="negative" flat round dense @click="deleteItem(row.id)" />
+        </q-td>
+      </template>
     </q-table>
-    
+
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
       <q-btn fab icon="add" color="positive" @click="dialogProduct = true" />
     </q-page-sticky>
@@ -72,8 +79,9 @@ export default defineComponent({
     loading: true,
     listName: '',
     tableColumns: [
-      { name: 'name', label: 'Produto', field: row => row.product.name, sortable: true, align: 'left' },
-      { name: 'amount', label: 'Quantidade Un/Kg', field: 'amount', sortable: true },
+      {name: 'name', label: 'Produto', field: row => row.product.name, sortable: true, align: 'left'},
+      {name: 'amount', label: 'Quantidade Un/Kg', field: 'amount', sortable: true},
+      { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'right' }
       //{ name: 'price', label: 'Preço unitário', field: 'price', sortable: true },
       //{ name: 'total', label: 'Total', field: 'total', sortable: true },
     ],
@@ -112,6 +120,15 @@ export default defineComponent({
       const {error} = await this.api.post('shopping_list_items', {product: productId, amount, list: listId})
       if (error) throw error
     },
+    async updateItem(itemId, amount) {
+      const {error} = await this.api.update('shopping_list_items', {id: itemId, amount})
+      if (error) throw error
+    },
+    async deleteItem(itemId) {
+      const {error} = await this.api.remove('shopping_list_items', itemId)
+      if (error) this.$q.notify({type: 'negative', message: error.message})
+      else await this.loadItems()
+    },
 
     async onSubmitProduct() {
       const productName = this.dialogProductItem.trim()
@@ -121,9 +138,14 @@ export default defineComponent({
         await this.loadProducts()
         const knowProduct = this.knowProducts.find(i => i.name.toLowerCase() === productName.toLowerCase())
         const productId = knowProduct ? knowProduct.id : await this.createProduct(productName)
-        await this.createItem(productId, parseFloat(this.dialogProductAmount), this.$route.params.list)
+
+        const productInUse = this.tableRows.find(i => i.product.id === productId)
+        if (productInUse) await this.updateItem(productInUse.id, productInUse.amount + parseFloat(this.dialogProductAmount))
+        else await this.createItem(productId, parseFloat(this.dialogProductAmount), this.$route.params.list)
+
         if (!knowProduct) await this.loadProducts()
         await this.loadItems()
+        this.dialogProduct = false
       } catch (e) {
         this.$q.notify({type: 'negative', message: e.message})
       } finally {

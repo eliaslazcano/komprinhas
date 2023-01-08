@@ -11,6 +11,7 @@ const routes = [
       { path: 'shopping-lists', name: 'shopping-lists', component: () => import('pages/ShoppingLists.vue') },
       { path: 'shopping-carts', name: 'shopping-carts', component: () => import('pages/ShoppingCarts.vue') },
       { path: 'shopping-list/:list', name: 'shopping-list', component: () => import('pages/ShoppingList.vue') },
+      { path: 'products', name: 'products', component: () => import('pages/KnowProducts.vue') },
     ]
   },
 

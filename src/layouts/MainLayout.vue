@@ -111,6 +111,11 @@ export default defineComponent({
         title: 'Carrinhos',
         icon: 'shopping_cart',
         to: '/shopping-carts'
+      },
+      {
+        title: 'Produtos conhecidos',
+        icon: 'inventory',
+        to: '/products'
       }
     ]
 

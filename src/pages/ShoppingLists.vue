@@ -5,9 +5,9 @@
       :loading="loading"
       :columns="columns"
       :rows="rows"
-      :pagination="{sortBy: 'id', descending: true, rowsPerPage: 7}"
+      :pagination="{sortBy: 'id', descending: true, rowsPerPage: 10}"
       row-key="id"
-      dense
+      :dense="$q.screen.lt.sm"
     >
       <template v-slot:body-cell-actions="{row}">
         <q-td class="text-right">
@@ -33,7 +33,7 @@ export default defineComponent({
     columns: [
       { name: 'id', label: 'Cod.', field: 'id', sortable: true, align: 'left' },
       { name: 'name', label: 'Nome', field: 'name', sortable: true },
-      { name: 'date', label: 'Criada em', field: 'created_at', sortable: true, format: val => useMoment(val).format('DD/MM/YYYY') },
+      { name: 'created_at', label: 'Criada em', field: 'created_at', sortable: true, format: val => useMoment(val).format('DD/MM/YYYY') },
       { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'right' }
     ],
     rows: [],

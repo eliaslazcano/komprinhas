@@ -2,6 +2,7 @@
   <q-page padding>
     <q-table
       title="Carrinhos de compras"
+      :dense="$q.screen.lt.sm"
     ></q-table>
   </q-page>
 </template>
