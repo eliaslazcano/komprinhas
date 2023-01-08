@@ -6,8 +6,9 @@
       :columns="columns"
       :rows="rows"
       :pagination="{sortBy: 'created_at', descending: true, rowsPerPage: 10}"
-      row-key="id"
       :dense="$q.screen.lt.sm"
+      row-key="id"
+      no-data-label="Nenhuma lista de compras.."
     >
       <template v-slot:body-cell-actions="{row}">
         <q-td class="text-center" style="width: 7rem">
@@ -16,7 +17,7 @@
         </q-td>
       </template>
     </q-table>
-    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+    <q-page-sticky position="bottom-right" :offset="[18, 18]" class="z-fab">
       <q-btn fab icon="add" color="positive" @click="createList" />
     </q-page-sticky>
   </q-page>
@@ -32,7 +33,7 @@ export default defineComponent({
     loading: true,
     columns: [
       //{ name: 'id', label: 'Cod.', field: 'id', sortable: true, align: 'left' },
-      { name: 'created_at', label: 'Criada em', field: 'created_at', sortable: true, align: 'left', format: val => useMoment(val).format('DD/MM/YYYY'), style: 'width: 7rem', },
+      { name: 'created_at', label: 'Criado em', field: 'created_at', sortable: true, align: 'left', format: val => useMoment(val).format('DD/MM/YYYY'), style: 'width: 7rem', },
       { name: 'name', label: 'Nome', field: 'name', sortable: true, align: 'left' },
       { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'center' }
     ],

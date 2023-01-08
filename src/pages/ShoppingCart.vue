@@ -6,7 +6,7 @@
       :rows="tableRows"
       :dense="$q.screen.lt.sm"
       :pagination="{sortBy: 'name', rowsPerPage: 10}"
-      no-data-label="Lista vazia.. adicione um produto"
+      no-data-label="Carrinho vazio.. adicione um produto"
     >
       <template v-slot:top="props">
         <q-input
@@ -35,7 +35,23 @@
             v-model="props.row.amount"
             v-slot="scope"
             title="Quantidade"
-            @save="updateItem(props.row.id, parseFloat($event))"
+            @save="updateItem(props.row.id, parseFloat($event), props.row.price)"
+            buttons
+            max-width="16rem"
+            touch-position
+          >
+            <q-input type="tel" v-model="scope.value" dense autofocus />
+          </q-popup-edit>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-price="props">
+        <q-td class="text-right">
+          <q-badge color="green">{{ props.row.price }}</q-badge>
+          <q-popup-edit
+            v-model="props.row.price"
+            v-slot="scope"
+            title="Preço"
+            @save="updateItem(props.row.id, props.row.amount, parseFloat($event))"
             buttons
             max-width="16rem"
             touch-position
@@ -82,6 +98,13 @@
               type="tel"
               :rules="[v => !!v && !!v.trim() || 'Informe a quantidade', v => !!v && !v.includes(',') || 'Use ponto ao invés de virgula']"
             />
+            <q-input
+              label="Preço unitário"
+              v-model="dialogProductPrice"
+              type="tel"
+              :rules="[v => !!v && !!v.trim() || 'Informe o preço', v => !!v && !v.includes(',') || 'Use ponto ao invés de virgula']"
+              hint="Preço por Un. ou Kg"
+            />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" color="primary" v-close-popup />
@@ -96,8 +119,8 @@
 <script>
 import {defineComponent} from 'vue'
 import {useApi} from 'src/composables/Api'
-export default defineComponent({
-  name: 'ShoppingList',
+export default defineComponent ({
+  name: 'ShoppingCart',
   data: () => ({
     api: useApi(),
     loading: true,
@@ -105,6 +128,8 @@ export default defineComponent({
     tableColumns: [
       {name: 'name', label: 'Produto', field: row => row.product.name, sortable: true, align: 'left'},
       {name: 'amount', label: 'Quantidade Un/Kg', field: 'amount', sortable: true},
+      { name: 'price', label: 'Preço unitário', field: 'price', sortable: true },
+      { name: 'total', label: 'Total', field: row => row.amount * row.price, sortable: true },
       { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'right' }
     ],
     tableRows: [],
@@ -112,13 +137,14 @@ export default defineComponent({
     dialogProduct: false,
     dialogProductItem: null,
     dialogProductAmount: '1',
+    dialogProductPrice: '1',
 
     knowProducts: [],
     productOptions: []
   }),
   methods: {
     async loadName() {
-      const {error, data} = await this.api.getById('shopping_lists', this.$route.params.list)
+      const {error, data} = await this.api.getById('shopping_carts', this.$route.params.cart)
       if (error) throw error
       else this.name = data.name
     },
@@ -128,7 +154,7 @@ export default defineComponent({
       else this.knowProducts = data
     },
     async loadItems() {
-      const {error, data} = await this.api.list('shopping_list_items', 'id, product (id, name), amount').eq('list', this.$route.params.list)
+      const {error, data} = await this.api.list('shopping_cart_items', 'id, product (id, name), amount, price').eq('cart', this.$route.params.cart)
       if (error) throw error
       else this.tableRows = data
     },
@@ -139,16 +165,16 @@ export default defineComponent({
       return data[0].id
     },
 
-    async createItem(productId, amount) {
-      const {error} = await this.api.post('shopping_list_items', {product: productId, amount, list: this.$route.params.list})
+    async createItem(productId, amount, price) {
+      const {error} = await this.api.post('shopping_cart_items', {product: productId, amount, price, cart: this.$route.params.cart})
       if (error) throw error
     },
-    async updateItem(itemId, amount) {
-      const {error} = await this.api.update('shopping_list_items', {id: itemId, amount})
+    async updateItem(itemId, amount, price) {
+      const {error} = await this.api.update('shopping_cart_items', {id: itemId, amount, price})
       if (error) throw error
     },
     async deleteItem(itemId) {
-      const {error} = await this.api.remove('shopping_list_items', itemId)
+      const {error} = await this.api.remove('shopping_cart_items', itemId)
       if (error) this.$q.notify({type: 'negative', message: error.message})
       else await this.loadItems()
     },
@@ -163,7 +189,8 @@ export default defineComponent({
       const product = {
         id: null,
         name: this.dialogProductItem.trim(),
-        amount: parseFloat(this.dialogProductAmount)
+        amount: parseFloat(this.dialogProductAmount),
+        price: parseFloat(this.dialogProductPrice)
       }
       this.loading = true
       try {
@@ -172,8 +199,8 @@ export default defineComponent({
         product.id = knowProduct ? knowProduct.id : await this.createProduct(product.name)
 
         const productInUse = this.tableRows.find(i => i.product.id === product.id)
-        if (productInUse) await this.updateItem(productInUse.id, productInUse.amount + product.amount)
-        else await this.createItem(product.id, product.amount)
+        if (productInUse) await this.updateItem(productInUse.id, productInUse.amount + product.amount, product.price)
+        else await this.createItem(product.id, product.amount, product.price)
 
         if (!knowProduct) await this.loadProducts()
         await this.loadItems()
@@ -191,13 +218,10 @@ export default defineComponent({
       await Promise.all([this.loadName(), this.loadProducts(), this.loadItems()])
     } catch (e) {
       this.$q.notify({type: 'negative', message: e.message})
-      this.$router.push({name: 'shopping-lists'})
+      this.$router.push({name: 'shopping-carts'})
     } finally {
       this.loading = false
     }
-  },
-  watch: {
-    knowProducts(v) {this.productOptions = v},
   }
 })
 </script>
