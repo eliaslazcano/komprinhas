@@ -19,6 +19,20 @@
           dense
         />
       </template>
+      <template v-slot:body-cell-amount="props">
+        <q-td class="text-right">
+          <q-badge color="blue">{{ props.row.amount }}</q-badge>
+          <q-popup-edit
+            v-model="props.row.amount"
+            v-slot="scope"
+            title="Quantidade"
+            @save="updateItem(props.row.id, parseFloat($event))"
+            buttons
+          >
+            <q-input type="tel" v-model="scope.value" dense autofocus />
+          </q-popup-edit>
+        </q-td>
+      </template>
       <template v-slot:body-cell-actions="{row}">
         <q-td class="text-right">
           <q-btn icon="delete" color="negative" flat round dense @click="deleteItem(row.id)" />
