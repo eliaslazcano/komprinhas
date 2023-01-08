@@ -6,8 +6,9 @@
       :rows="tableRows"
       :dense="$q.screen.lt.sm"
       :pagination="{sortBy: 'name', rowsPerPage: 10}"
+      no-data-label="Lista vazia.. adicione um produto"
     >
-      <template v-slot:top>
+      <template v-slot:top="props">
         <q-input
           label="Título"
           v-model="listName"
@@ -17,7 +18,15 @@
           readonly
           outlined
           dense
-        />
+        >
+          <template v-slot:after>
+            <q-btn
+              flat round dense
+              :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+              @click="props.toggleFullscreen"
+            />
+          </template>
+        </q-input>
       </template>
       <template v-slot:body-cell-amount="props">
         <q-td class="text-right">
@@ -40,7 +49,7 @@
       </template>
     </q-table>
 
-    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+    <q-page-sticky position="bottom-right" :offset="[18, 18]" class="z-fab">
       <q-btn fab icon="add" color="positive" @click="dialogProduct = true" />
     </q-page-sticky>
 

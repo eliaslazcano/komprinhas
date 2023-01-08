@@ -5,12 +5,12 @@
       :loading="loading"
       :columns="columns"
       :rows="rows"
-      :pagination="{sortBy: 'id', descending: true, rowsPerPage: 10}"
+      :pagination="{sortBy: 'created_at', descending: true, rowsPerPage: 10}"
       row-key="id"
       :dense="$q.screen.lt.sm"
     >
       <template v-slot:body-cell-actions="{row}">
-        <q-td class="text-right">
+        <q-td class="text-center" style="width: 7rem">
           <q-btn icon="edit" color="primary" flat round dense :to="'shopping-list/' + row.id" />
           <q-btn icon="delete" color="negative" flat round dense @click="deleteList(row.id)" />
         </q-td>
@@ -31,10 +31,10 @@ export default defineComponent({
   data: () => ({
     loading: true,
     columns: [
-      { name: 'id', label: 'Cod.', field: 'id', sortable: true, align: 'left' },
-      { name: 'name', label: 'Nome', field: 'name', sortable: true },
-      { name: 'created_at', label: 'Criada em', field: 'created_at', sortable: true, format: val => useMoment(val).format('DD/MM/YYYY') },
-      { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'right' }
+      //{ name: 'id', label: 'Cod.', field: 'id', sortable: true, align: 'left' },
+      { name: 'created_at', label: 'Criada em', field: 'created_at', sortable: true, align: 'left', format: val => useMoment(val).format('DD/MM/YYYY'), style: 'width: 7rem', },
+      { name: 'name', label: 'Nome', field: 'name', sortable: true, align: 'left' },
+      { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'center' }
     ],
     rows: [],
   }),
@@ -49,23 +49,21 @@ export default defineComponent({
     createList() {
       this.$q.dialog({
         title: 'Criar lista',
-        message: 'Quer dar um nome a lista?',
+        message: 'Dê um nome a lista',
         prompt: {
-          model: '',
+          model: 'Lista de Compras',
           isValid: v => !!v && !!v.trim()
         },
-        cancel: 'Sem nome',
+        cancel: 'Cancelar',
         ok: 'Confirmar',
       })
         .onOk(async data => {
           const {error, data: rows} = await useApi().post('shopping_lists', {name: data.trim()}).select()
           if (error) this.$q.notify({type: 'negative', message: error.message})
-          this.$router.push('shopping-list/' + rows[0].id)
-        })
-        .onCancel(async () => {
-          const {error, data: rows} = await useApi().post('shopping_lists', {}).select()
-          if (error) this.$q.notify({type: 'negative', message: error.message})
-          this.$router.push('shopping-list/' + rows[0].id)
+          else {
+            this.$q.notify({type: 'positive', message: 'Lista registrada'})
+            this.$router.push("shopping-list/" + rows[0].id);
+          }
         })
     },
     deleteList(id) {

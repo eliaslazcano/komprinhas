@@ -6,6 +6,7 @@
       :rows="tableRows"
       :columns="tableColumns"
       :pagination="{sortBy: 'name', rowsPerPage: 10}"
+      :dense="$q.screen.lt.sm"
     ></q-table>
   </q-page>
 </template>
