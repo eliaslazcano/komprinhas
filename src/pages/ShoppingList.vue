@@ -28,6 +28,23 @@
           </template>
         </q-input>
       </template>
+      <template v-slot:body-cell-name="props">
+        <q-td class="text-left">
+          {{ props.row.product.name }}
+          <q-popup-edit
+            v-model="props.row.product.name"
+            v-slot="scope"
+            title="Renomear"
+            @save="updateProduct(props.row.product.id, $event)"
+            buttons
+            label-set="Ok"
+            max-width="16rem"
+            touch-position
+          >
+            <q-input type="tel" v-model="scope.value" dense autofocus />
+          </q-popup-edit>
+        </q-td>
+      </template>
       <template v-slot:body-cell-amount="props">
         <q-td class="text-right">
           <q-badge color="blue">{{ props.row.amount }}</q-badge>
@@ -37,6 +54,7 @@
             title="Quantidade"
             @save="updateItem(props.row.id, parseFloat($event))"
             buttons
+            label-set="Ok"
             max-width="16rem"
             touch-position
           >
@@ -137,6 +155,10 @@ export default defineComponent({
       const {data, error} = await this.api.post('products', {name}).select()
       if (error) throw error
       return data[0].id
+    },
+    async updateProduct(id, name) {
+      const {error} = await this.api.update('products', {id: id, name})
+      if (error) throw error
     },
 
     async createItem(productId, amount) {

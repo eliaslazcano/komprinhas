@@ -73,9 +73,11 @@
     </q-drawer>
 
     <q-page-container :style="{ backgroundColor: !$q.dark.isActive ? '#f5f6f8' : null }">
-      <transition name="fade">
-        <router-view />
-      </transition>
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </q-page-container>
 
     <q-footer bordered :class="{'bg-dark':$q.dark.isActive}" class="q-pa-xs">

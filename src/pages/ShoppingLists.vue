@@ -10,6 +10,23 @@
       row-key="id"
       no-data-label="Nenhuma lista de compras.."
     >
+      <template v-slot:body-cell-name="props">
+        <q-td class="text-left">
+          {{ props.row.name }}
+          <q-popup-edit
+            v-model="props.row.name"
+            v-slot="scope"
+            title="Renomear"
+            @save="updateList(props.row.id, $event)"
+            buttons
+            label-set="Ok"
+            max-width="16rem"
+            touch-position
+          >
+            <q-input type="tel" v-model="scope.value" dense autofocus />
+          </q-popup-edit>
+        </q-td>
+      </template>
       <template v-slot:body-cell-actions="{row}">
         <q-td class="text-center" style="width: 7rem">
           <q-btn icon="edit" color="primary" flat round dense :to="'shopping-list/' + row.id" />
@@ -30,6 +47,7 @@ import {useMoment} from 'src/composables/Moment'
 export default defineComponent({
   name: 'ShoppingLists',
   data: () => ({
+    api: useApi(),
     loading: true,
     columns: [
       //{ name: 'id', label: 'Cod.', field: 'id', sortable: true, align: 'left' },
@@ -42,7 +60,7 @@ export default defineComponent({
   methods: {
     async loadData() {
       this.loading = true
-      const { error, data } = await useApi().list('shopping_lists')
+      const { error, data } = await this.api.list('shopping_lists')
       if (error) this.$q.notify({type: 'negative', message: error.message})
       else this.rows = data
       this.loading = false
@@ -59,13 +77,17 @@ export default defineComponent({
         ok: 'Confirmar',
       })
         .onOk(async data => {
-          const {error, data: rows} = await useApi().post('shopping_lists', {name: data.trim()}).select()
+          const {error, data: rows} = await this.api.post('shopping_lists', {name: data.trim()}).select()
           if (error) this.$q.notify({type: 'negative', message: error.message})
           else {
             this.$q.notify({type: 'positive', message: 'Lista registrada'})
             this.$router.push("shopping-list/" + rows[0].id);
           }
         })
+    },
+    async updateList(id, name) {
+      const {error} = await this.api.update('shopping_lists', {id, name})
+      if (error) throw error
     },
     deleteList(id) {
       this.$q.dialog({
@@ -74,7 +96,7 @@ export default defineComponent({
         cancel: true,
         persistent: true
       }).onOk(async () => {
-        const { error } = await useApi().remove('shopping_lists', id)
+        const { error } = await this.api.remove('shopping_lists', id)
         if (error) this.$q.notify({ type: 'negative', message: error.message })
         else await this.loadData()
       })
