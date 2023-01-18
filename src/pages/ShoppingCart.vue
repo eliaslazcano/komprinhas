@@ -3,7 +3,7 @@
     <q-table
       :loading="loading"
       :columns="tableColumns"
-      :rows="tableRows"
+      :rows="tableRowsComputed"
       :dense="$q.screen.lt.sm"
       :pagination="{sortBy: 'name', rowsPerPage: 10}"
       no-data-label="Carrinho vazio.. adicione um produto"
@@ -64,6 +64,13 @@
         <q-td class="text-right">
           <q-btn icon="delete" color="negative" flat round dense @click="deleteItem(row.id)" />
         </q-td>
+      </template>
+      <template v-slot:bottom-row>
+        <q-tr>
+          <q-td colspan="5">
+            <p class="q-my-xs" style="font-weight: bolder">Total R$ {{ totalPrice }}</p>
+          </q-td>
+        </q-tr>
       </template>
     </q-table>
 
@@ -129,7 +136,7 @@ export default defineComponent ({
       {name: 'name', label: 'Produto', field: row => row.product.name, sortable: true, align: 'left'},
       {name: 'amount', label: 'Quantidade Un/Kg', field: 'amount', sortable: true},
       { name: 'price', label: 'Preço unitário', field: 'price', sortable: true },
-      { name: 'total', label: 'Total', field: row => row.amount * row.price, sortable: true },
+      { name: 'total', label: 'Total', field: 'total', sortable: true },
       { name: 'actions', label: 'Botões', field: 'actions', sortable: false, align: 'right' }
     ],
     tableRows: [],
@@ -210,6 +217,17 @@ export default defineComponent ({
       } finally {
         this.loading = false
       }
+    },
+  },
+  computed: {
+    tableRowsComputed() {
+      return this.tableRows.map(i => {
+        i.total = Math.ceil(i.amount * i.price * 100) / 100
+        return i
+      });
+    },
+    totalPrice() {
+      return this.tableRowsComputed.reduce((previousValue, currentValue) => previousValue + currentValue.total, 0);
     },
   },
   async created() {
