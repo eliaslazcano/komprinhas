@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <div class="q-gutter-y-sm">
-      <q-card flat bordered class="full-width cursor-pointer" @click="$router.push({name: 'shopping-lists'})">
+      <q-card class="full-width cursor-pointer" @click="$router.push({name: 'shopping-lists'})">
         <q-card-section>
           <div class="row items-center no-wrap">
             <div class="col">
@@ -15,7 +15,7 @@
           </div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered class="full-width cursor-pointer" @click="$router.push({name: 'shopping-carts'})">
+      <q-card class="full-width cursor-pointer" @click="$router.push({name: 'shopping-carts'})">
         <q-card-section>
           <div class="row items-center no-wrap">
             <div class="col">
